@@ -1,4 +1,7 @@
+from django.contrib.auth.models import User
 from django.db import models
+
+from clients_auth.models import CustomUser, Company
 
 
 class Industries(models.Model):
@@ -29,7 +32,8 @@ class Clients(models.Model):
     date_modified = models.DateTimeField(auto_now=True)
     industries = models.ManyToManyField(Industries)
     type = models.ForeignKey(ClientType, related_name='client_type', null=True, on_delete=models.SET_NULL)
-    date_time_next_contact = models.DateTimeField(null=True)
+    date_time_next_contact = models.DateTimeField(null=True, blank=True)
+    user = models.ForeignKey(CustomUser, related_name='user', on_delete=models.PROTECT, default=1)
 
     def __str__(self):
         return self.name
