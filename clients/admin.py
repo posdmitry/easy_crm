@@ -1,6 +1,5 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.models import User
 
 from clients.models import Clients, ClientType, Industries, Messages, ContactPerson
 from clients_auth.models import CustomUser, Company
@@ -42,20 +41,31 @@ class ContactPersonsInline(admin.TabularInline):
 class ClientsAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Owner', {
-            'fields': ('get_company', 'user',)
+            'fields': ('get_company', 'user')
         }),
         ('General information', {
-            'fields': (('name', 'date_time_next_contact'), ('industries', 'type'),)
+            'fields': (('name', 'date_time_next_contact'), ('industries', 'client_type'),)
         })
     )
-    list_display = ('name', 'type', 'date_time_next_contact', 'get_company')
-    readonly_fields = ('get_company',)
+    list_display = ('id', 'name', 'client_type', 'date_time_next_contact', 'get_company', 'user')
     inlines = [ContactPersonsInline, MessagesInline]
+    readonly_fields = ('get_company',)
 
     def get_company(self, obj):
         return obj.user.company
 
     get_company.short_description = 'Owner company'
+
+    def get_readonly_fields(self, request, obj=None):
+        fields = super().get_readonly_fields(request)
+        if not request.user.is_superuser:
+            fields += ('user',)
+        return fields
+
+    def save_model(self, request, obj, form, change):
+        if not obj.user:
+            obj.user = request.user
+        super().save_model(request, obj, form, change)
 
 
 @admin.register(ClientType)
