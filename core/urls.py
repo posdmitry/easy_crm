@@ -1,5 +1,6 @@
 from django.contrib import admin
-from django.urls import path, include, re_path
+from django.urls import path, include
+from .yasg import urlpatterns as doc_urls
 
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
@@ -14,5 +15,10 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view()),
     path('api/token/verify/', TokenVerifyView.as_view()),
 
-    re_path(r'^auth/', include('djoser.urls'))
+    # Djoser
+    path('auth/', include('djoser.urls')),
+    path('auth/', include('djoser.urls.authtoken')),
+    path('auth/', include('djoser.urls.jwt')),
 ]
+
+urlpatterns += doc_urls

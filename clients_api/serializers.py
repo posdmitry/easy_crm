@@ -24,7 +24,6 @@ class MessagesSerializer(serializers.ModelSerializer):
 class ClientsSerializer(serializers.ModelSerializer):
     contact_persons = ContactPersonSerializer(read_only=True, many=True)
     messages = MessagesSerializer(read_only=True, many=True)
-    type = serializers.SlugRelatedField(slug_field="type", read_only=True)
     user = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
@@ -58,3 +57,13 @@ class ClientsSerializer(serializers.ModelSerializer):
             client.contact_persons.add(contact_person_obj)
         client.save()
         return client
+
+
+class ClientsListSerializer(ClientsSerializer):
+    """
+    Serialize list of clients
+    """
+    class Meta:
+        model = Clients
+        fields = ('id', 'name', 'client_type', 'industries', 'contact_persons', 'date_time_next_contact', 'user')
+        depth = 1
