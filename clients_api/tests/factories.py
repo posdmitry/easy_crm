@@ -5,7 +5,7 @@ from django.contrib.auth.hashers import make_password
 from factory import post_generation
 from faker import Factory
 
-from clients.models import Industries, ClientType, ContactPerson, Clients
+from clients.models import Industries, ClientType, ContactPerson, Clients, Messages
 from clients_auth.models import CustomUser, Company
 
 
@@ -77,4 +77,13 @@ class ContactPersonFactory(factory.django.DjangoModelFactory):
     phone_number = factory.Faker('phone_number')
     email = factory.Faker('email')
     telegram = factory.Iterator(['@test', '@test1'])
+    client = factory.SubFactory(ClientsFactory)
+
+
+class MessagesFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Messages
+
+    message = factory.Faker('text')
+    date_time_create = factory.LazyFunction(datetime.now)
     client = factory.SubFactory(ClientsFactory)

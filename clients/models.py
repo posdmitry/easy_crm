@@ -59,7 +59,7 @@ class ContactPerson(models.Model):
     name = models.CharField(max_length=50)
     role = models.CharField(max_length=20)
     phone_number = models.CharField(max_length=50)
-    email = models.EmailField(max_length=30, blank=True)
+    email = models.EmailField(max_length=100, blank=True)
     telegram = models.CharField(max_length=50, blank=True)
     client = models.ForeignKey(Clients, related_name='contact_persons', on_delete=models.CASCADE)
 

@@ -1,64 +1,56 @@
-from rest_framework import generics, permissions, viewsets, mixins
-from rest_framework.exceptions import PermissionDenied
+from rest_framework import status
+from rest_framework.generics import CreateAPIView
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from django_currentuser.middleware import get_current_authenticated_user
 
-from clients.models import Clients, Messages, Industries
-from .serializers import ClientsSerializer, MessagesSerializer, ClientsListSerializer
+from clients.models import Clients
+from .mixins import CustomClientsQuerySetMixin, GetSerializerMixin
+from .serializers import (
+    ClientsSerializer,
+    ClientsListSerializer,
+    CreateMessageSerializer,
+    ClientCreateSerializer,
+    ClientUpdateSerializer
+)
 
 
-class ClientsViewSet(viewsets.ReadOnlyModelViewSet):
+class ClientsViewSet(CustomClientsQuerySetMixin, GetSerializerMixin, ReadOnlyModelViewSet):
     """
-    Get for read only list of clients and retrieve single object of client
+    Get list of clients and retrieve single object of client for read only
     """
     queryset = Clients.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        if self.request.user.is_superuser:
-            return queryset
-        elif self.request.user.is_admin:
-            return queryset.filter(user__company=self.request.user.company)
-        elif self.request.user.is_employee and not self.request.user.is_admin:
-            return queryset.filter(user=self.request.user)
-        elif not self.request.user.is_employee or not self.request.user.is_admin or not self.request.user.is_superuser:
-            raise PermissionDenied(detail="You do not have permission for this action!")
-        return queryset
-
-    # def get_object(self):
-    #     obj = super().get_object()
-    #     if (
-    #             self.request.user.is_superuser or
-    #             (self.request.user.is_admin and self.request.user.company == obj.user.company) or
-    #             (self.request.user.is_employee and self.request.user.id == obj.user.id)
-    #     ):
-    #         return obj
-    #     else:
-    #         raise PermissionDenied(detail="You do not have permission for this action!")
-
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return ClientsListSerializer
-        elif self.action == 'retrieve':
-            return ClientsSerializer
+    permission_classes = [IsAuthenticated]
+    serializer_class = ClientsListSerializer
+    serializer_requests_classes = {
+        'list': ClientsListSerializer,
+        'retrieve': ClientsSerializer
+    }
 
 
-class MessagesViewSet(mixins.CreateModelMixin,
-                      mixins.ListModelMixin,
-                      viewsets.GenericViewSet):
-    queryset = Messages.objects.all()
-    serializer_class = MessagesSerializer
+class ClientCreateUpdateDeleteView(CustomClientsQuerySetMixin, GetSerializerMixin, ModelViewSet):
+    """
+    Create client view
+    """
+    queryset = Clients.objects.all()
+    permission_classes = [IsAuthenticated]
+    serializer_class = ClientCreateSerializer
+    serializer_requests_classes = {
+        'create': ClientCreateSerializer,
+        'update': ClientUpdateSerializer,
+        'destroy': ClientsSerializer
+    }
 
-    # def get_queryset(self, *args, **kwargs):
-    #     data = self.request.data
-    #     return super().get_queryset()
+    def destroy(self, request, *args, **kwargs):
+        super().destroy(self, request, *args, **kwargs)
+        return Response(status=status.HTTP_204_NO_CONTENT,
+                        data=f"Client with id={kwargs.get('pk')} has successfully deleted!")
 
 
-class MessagesCreateView(APIView):
-    def post(self, request):
-        message = MessagesSerializer(data=request.data)
-        if message.is_valid():
-            message.save()
-        return Response(status=201)
+class MessageCreateView(ModelViewSet):
+    """
+    Create message for client view
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class = CreateMessageSerializer
+
