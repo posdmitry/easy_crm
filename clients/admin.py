@@ -70,7 +70,7 @@ class ClientsAdmin(admin.ModelAdmin):
 
 @admin.register(ClientType)
 class ClientTypeAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('id', 'client_type')
 
 
 @admin.register(Industries)
