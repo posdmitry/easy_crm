@@ -21,6 +21,8 @@ class ViewsBaseTestCase(AuthenticatedTestClientMixin, APITransactionTestCase):
     UPDATE_CLIENT = ""
     DELETE_CLIENT = ""
     CREATE_MESSAGE = ""
+    LIST_CLIENT_TYPES = ""
+    LIST_INDUSTRIES = ""
 
     def setUp(self, *args, **kwargs):
         self.company, _ = Company.objects.get_or_create(name='TestCompany')
@@ -64,6 +66,14 @@ class ViewsBaseTestCase(AuthenticatedTestClientMixin, APITransactionTestCase):
 
         return client
 
+    def build_client_types(self):
+        client_type = ClientTypeFactory.create_batch(4)
+        return client_type
+
+    def build_industries(self):
+        industries = IndustriesFactory.create_batch(5)
+        return industries
+
     def get_list_clients_request(self):
         read_response = self.client.get(
             self.LIST_CLIENTS,
@@ -75,6 +85,20 @@ class ViewsBaseTestCase(AuthenticatedTestClientMixin, APITransactionTestCase):
         url = f"{self.RETRIEVE_CLIENT}{client_id}/"
         read_response = self.client.get(
             url,
+            format='json',
+        )
+        return read_response
+
+    def get_list_client_types_request(self):
+        read_response = self.client.get(
+            self.LIST_CLIENT_TYPES,
+            format='json',
+        )
+        return read_response
+
+    def get_list_industries(self):
+        read_response = self.client.get(
+            self.LIST_INDUSTRIES,
             format='json',
         )
         return read_response
@@ -188,3 +212,17 @@ class ViewsBaseTestCase(AuthenticatedTestClientMixin, APITransactionTestCase):
         for expected_industries, actual_industries in zip(expected_industries, actual_industries):
             for field_name in ("id", "name"):
                 self.assertEqual(expected_industries.get(field_name), actual_industries.get(field_name), msg=field_name)
+
+    def assert_get_client_types_list(self, expected, actual):
+        self.assertEqual(len(expected), len(actual))
+
+        for client_type in range(len(expected)):
+            self.assertEqual(expected[client_type].id, actual[client_type].get("id"))
+            self.assertEqual(expected[client_type].client_type, actual[client_type].get("client_type"))
+
+    def assert_get_industries_list(self, expected, actual):
+        self.assertEqual(len(expected), len(actual))
+
+        for industry in range(len(expected)):
+            self.assertEqual(expected[industry].id, actual[industry].get("id"))
+            self.assertEqual(expected[industry].name, actual[industry].get("name"))

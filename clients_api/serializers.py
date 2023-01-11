@@ -192,6 +192,14 @@ class ClientUpdateSerializer(ClientCreateSerializer):
         return instance
 
 
+class ClientTypesListSerializer(serializers.ModelSerializer):
+    """
+    Serialize list of client types
+    """
+    class Meta:
+        model = ClientType
+        fields = ('id', 'client_type')
+
 
 
 

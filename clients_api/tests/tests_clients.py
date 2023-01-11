@@ -9,6 +9,8 @@ class ClientsTestCase(ViewsBaseTestCase):
     CREATE_CLIENT = f"{API_VERSION}/clients/create/"
     UPDATE_CLIENT = f"{API_VERSION}/clients/update/"
     DELETE_CLIENT = f"{API_VERSION}/clients/delete/"
+    LIST_CLIENT_TYPES = f"{API_VERSION}/client_types/"
+    LIST_INDUSTRIES = f"{API_VERSION}/industries/"
 
     def test_get_list_clients(self):
         user = self.get_test_user()
@@ -576,6 +578,25 @@ class ClientsTestCase(ViewsBaseTestCase):
 
         response = self.post_delete_client(client_employee.id)
         self.assert_response_permission_denied_for_user(response)
+
+    def test_client_types_list(self):
+        user = self.get_test_user()
+        self.client.force_authenticate(user=user)
+
+        expected_client_types = self.build_client_types()
+        response = self.get_list_client_types_request()
+        self.assert_successful_response(response)
+        self.assert_get_client_types_list(expected=expected_client_types, actual=response.json())
+
+    def test_industries_list(self):
+        user = self.get_test_user()
+        self.client.force_authenticate(user=user)
+
+        expected_industries = self.build_industries()
+        response = self.get_list_industries()
+        self.assert_successful_response(response)
+        self.assert_get_industries_list(expected=expected_industries, actual=response.json())
+
 
 
 

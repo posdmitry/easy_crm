@@ -1,21 +1,20 @@
 from rest_framework import status
-from rest_framework.generics import CreateAPIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from clients.models import Clients
+from clients.models import Clients, ClientType, Industries
 from .mixins import CustomClientsQuerySetMixin, GetSerializerMixin
 from .serializers import (
     ClientsSerializer,
     ClientsListSerializer,
     CreateMessageSerializer,
     ClientCreateSerializer,
-    ClientUpdateSerializer
+    ClientUpdateSerializer, ClientTypesListSerializer, IndustriesSerializer
 )
 
 
-class ClientsViewSet(CustomClientsQuerySetMixin, GetSerializerMixin, ReadOnlyModelViewSet):
+class ClientsViewSet(CustomClientsQuerySetMixin, GetSerializerMixin, ModelViewSet):
     """
     Get list of clients and retrieve single object of client for read only
     """
@@ -24,18 +23,7 @@ class ClientsViewSet(CustomClientsQuerySetMixin, GetSerializerMixin, ReadOnlyMod
     serializer_class = ClientsListSerializer
     serializer_requests_classes = {
         'list': ClientsListSerializer,
-        'retrieve': ClientsSerializer
-    }
-
-
-class ClientCreateUpdateDeleteView(CustomClientsQuerySetMixin, GetSerializerMixin, ModelViewSet):
-    """
-    Create client view
-    """
-    queryset = Clients.objects.all()
-    permission_classes = [IsAuthenticated]
-    serializer_class = ClientCreateSerializer
-    serializer_requests_classes = {
+        'retrieve': ClientsSerializer,
         'create': ClientCreateSerializer,
         'update': ClientUpdateSerializer,
         'destroy': ClientsSerializer
@@ -53,4 +41,22 @@ class MessageCreateView(ModelViewSet):
     """
     permission_classes = [IsAuthenticated]
     serializer_class = CreateMessageSerializer
+
+
+class ClientTypesView(ReadOnlyModelViewSet):
+    """
+    Get list of client types
+    """
+    queryset = ClientType.objects.all()
+    permission_classes = [IsAuthenticated]
+    serializer_class = ClientTypesListSerializer
+
+
+class IndustriesView(ReadOnlyModelViewSet):
+    """
+    Get list of industries
+    """
+    queryset = Industries.objects.all()
+    permission_classes = [IsAuthenticated]
+    serializer_class = IndustriesSerializer
 
